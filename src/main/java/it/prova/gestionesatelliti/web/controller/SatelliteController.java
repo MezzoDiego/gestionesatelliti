@@ -1,5 +1,6 @@
 package it.prova.gestionesatelliti.web.controller;
 
+import java.util.Date;
 import java.util.List;
 
 import javax.validation.Valid;
@@ -19,6 +20,7 @@ import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import it.prova.gestionesatelliti.model.Satellite;
+import it.prova.gestionesatelliti.model.StatoSatellite;
 import it.prova.gestionesatelliti.service.SatelliteService;
 
 @Controller
@@ -108,5 +110,19 @@ public class SatelliteController {
 		redirectAttrs.addFlashAttribute("successMessage", "Operazione eseguita correttamente");
 		return "redirect:/satellite";
 	}
+	
+	@PostMapping("/launch")
+	public String launch(@RequestParam Long idSatellite, RedirectAttributes redirectAttrs) {
+
+		Satellite satelliteToBeUpdated = satelliteService.caricaSingoloElemento(idSatellite);
+		satelliteToBeUpdated.setDataLancio(new Date());
+		satelliteToBeUpdated.setStato(StatoSatellite.IN_MOVIMENTO);
+		satelliteService.aggiorna(satelliteToBeUpdated);
+
+		redirectAttrs.addFlashAttribute("successMessage", "Operazione eseguita correttamente");
+		return "redirect:/satellite";
+	}
+	
+	
 
 }
