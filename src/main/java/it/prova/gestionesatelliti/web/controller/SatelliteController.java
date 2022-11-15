@@ -7,6 +7,7 @@ import javax.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.ui.ModelMap;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
@@ -58,6 +59,18 @@ public class SatelliteController {
 	public String show(@PathVariable(required = true) Long idSatellite, Model model) {
 		model.addAttribute("show_satellite_attr", satelliteService.caricaSingoloElemento(idSatellite));
 		return "satellite/show";
+	}
+	
+	@GetMapping("/search")
+	public String search() {
+		return "satellite/search";
+	}
+	
+	@PostMapping("/list")
+	public String listByExample(Satellite example, ModelMap model) {
+		List<Satellite> results = satelliteService.findByExample(example);
+		model.addAttribute("satellite_list_attribute", results);
+		return "satellite/list";
 	}
 
 }
