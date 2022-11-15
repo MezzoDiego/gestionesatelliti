@@ -112,11 +112,23 @@ public class SatelliteController {
 	}
 	
 	@PostMapping("/launch")
-	public String launch(@RequestParam Long idSatellite, RedirectAttributes redirectAttrs) {
+	public String launchSatellite(@RequestParam Long idSatellite, RedirectAttributes redirectAttrs) {
 
 		Satellite satelliteToBeUpdated = satelliteService.caricaSingoloElemento(idSatellite);
 		satelliteToBeUpdated.setDataLancio(new Date());
 		satelliteToBeUpdated.setStato(StatoSatellite.IN_MOVIMENTO);
+		satelliteService.aggiorna(satelliteToBeUpdated);
+
+		redirectAttrs.addFlashAttribute("successMessage", "Operazione eseguita correttamente");
+		return "redirect:/satellite";
+	}
+	
+	@PostMapping("/return")
+	public String returnSatellite(@RequestParam Long idSatellite, RedirectAttributes redirectAttrs) {
+
+		Satellite satelliteToBeUpdated = satelliteService.caricaSingoloElemento(idSatellite);
+		satelliteToBeUpdated.setDataRientro(new Date());
+		satelliteToBeUpdated.setStato(StatoSatellite.DISATTIVATO);
 		satelliteService.aggiorna(satelliteToBeUpdated);
 
 		redirectAttrs.addFlashAttribute("successMessage", "Operazione eseguita correttamente");
