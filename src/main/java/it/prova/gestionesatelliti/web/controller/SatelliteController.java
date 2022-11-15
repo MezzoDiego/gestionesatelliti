@@ -26,10 +26,10 @@ import it.prova.gestionesatelliti.service.SatelliteService;
 @Controller
 @RequestMapping(value = "/satellite")
 public class SatelliteController {
-	
+
 	@Autowired
 	private SatelliteService satelliteService;
-	
+
 	@GetMapping
 	public ModelAndView listAll() {
 		ModelAndView mv = new ModelAndView();
@@ -38,13 +38,13 @@ public class SatelliteController {
 		mv.setViewName("satellite/list");
 		return mv;
 	}
-	
+
 	@GetMapping("/insert")
 	public String create(Model model) {
 		model.addAttribute("insert_satellite_attr", new Satellite());
 		return "satellite/insert";
 	}
-	
+
 	@PostMapping("/save")
 	public String save(@Valid @ModelAttribute("insert_satellite_attr") Satellite satellite, BindingResult result,
 			RedirectAttributes redirectAttrs) {
@@ -52,65 +52,123 @@ public class SatelliteController {
 		if (result.hasErrors())
 			return "satellite/insert";
 
+		if(satellite.getDataLancio() != null && satellite.getDataRientro() == null) {
+			result.rejectValue("dataRientro", "status.error",
+					"Inserire anche dataRientro.");
+			return "satellite/insert";
+		}
+		
+		if (satellite.getDataLancio().after(satellite.getDataRientro())) {
+			result.rejectValue("dataRientro", "status.error",
+					"La data di rientro non puo' essere inferiore a quella di lancio!!!");
+			return "satellite/insert";
+		}
+
+		if (satellite.getDataLancio().before(new Date()) && satellite.getStato() == null) {
+			result.rejectValue("stato", "status.error", "Selezionare uno stato");
+			return "satellite/insert";
+		}
+
+		if ((satellite.getStato() == StatoSatellite.IN_MOVIMENTO || satellite.getStato() == StatoSatellite.FISSO)
+				&& satellite.getDataRientro().before(new Date())) {
+			result.rejectValue("dataRientro", "status.error",
+					"Se la data di rientro e'precedente a quella odierna , lo stato deve essere disattivato.");
+			return "satellite/insert";
+		}
+
 		satelliteService.inserisciNuovo(satellite);
 
 		redirectAttrs.addFlashAttribute("successMessage", "Operazione eseguita correttamente");
 		return "redirect:/satellite";
 	}
-	
+
 	@GetMapping("/show/{idSatellite}")
 	public String show(@PathVariable(required = true) Long idSatellite, Model model) {
 		model.addAttribute("show_satellite_attr", satelliteService.caricaSingoloElemento(idSatellite));
 		return "satellite/show";
 	}
-	
+
 	@GetMapping("/search")
 	public String search() {
 		return "satellite/search";
 	}
-	
+
 	@PostMapping("/list")
 	public String listByExample(Satellite example, ModelMap model) {
 		List<Satellite> results = satelliteService.findByExample(example);
 		model.addAttribute("satellite_list_attribute", results);
 		return "satellite/list";
 	}
-	
+
 	@GetMapping("/delete/{idSatellite}")
 	public String delete(@PathVariable(required = true) Long idSatellite, Model model) {
 		model.addAttribute("delete_satellite_attr", satelliteService.caricaSingoloElemento(idSatellite));
 		return "satellite/delete";
 	}
-	
+
 	@PostMapping("/saveDelete")
 	public String saveDelete(@RequestParam Long idSatellite, RedirectAttributes redirectAttrs) {
 
-		satelliteService.rimuovi(idSatellite);
+		Satellite satelliteReloaded = satelliteService.caricaSingoloElemento(idSatellite);
+
+		if (satelliteReloaded.getDataLancio().after(new Date())) {
+			satelliteService.rimuovi(idSatellite);
+		} else if(satelliteReloaded.getDataRientro().before(new Date()) && satelliteReloaded.getStato() == StatoSatellite.DISATTIVATO) {
+			satelliteService.rimuovi(idSatellite);
+		}else{
+			redirectAttrs.addFlashAttribute("errorMessage", "Impossibile eliminare satellite: e'gia partito.");
+			return "redirect:/satellite";
+		}
+
 
 		redirectAttrs.addFlashAttribute("successMessage", "Operazione eseguita correttamente");
 		return "redirect:/satellite";
 	}
-	
+
 	@GetMapping("/update/{idSatellite}")
 	public String update(@PathVariable(required = true) Long idSatellite, Model model) {
 		model.addAttribute("update_satellite_attr", satelliteService.caricaSingoloElemento(idSatellite));
 		return "satellite/update";
 	}
-	
+
 	@PostMapping("/saveUpdate")
 	public String saveUpdate(@Valid @ModelAttribute("update_satellite_attr") Satellite satellite, BindingResult result,
-			 RedirectAttributes redirectAttrs) {
+			RedirectAttributes redirectAttrs) {
 
-		
 		if (result.hasErrors())
 			return "satellite/update";
 		
+		if (satellite.getDataLancio().after(satellite.getDataRientro())) {
+			result.rejectValue("dataRientro", "status.error",
+					"La data di rientro non puo' essere inferiore a quella di lancio!!!");
+			return "satellite/update";
+		}
+		
+		if(satellite.getDataLancio().before(new Date()) && satellite.getDataRientro().before(new Date()) && satellite.getStato() != StatoSatellite.DISATTIVATO) {
+			result.rejectValue("stato", "status.error",
+					"Se il satellite e' atterrato, e' necessario disattivarlo.");
+			return "satellite/update";
+		}
+		
+		if(satellite.getStato() == StatoSatellite.DISATTIVATO && satellite.getDataRientro() == null) {
+			result.rejectValue("dataRientro", "status.error",
+					"Se lo stato e' disattivato, la data di rientro deve necessariamente essere valorizzata.");
+			return "satellite/update";
+		}
+		
+		if(satellite.getDataLancio() == null && satellite.getDataRientro() != null) {
+			result.rejectValue("dataRientro", "status.error",
+					"La data di lancio deve essere valorizzata se lo e' la data di rientro.");
+			return "satellite/update";
+		}
+			
+
 		satelliteService.aggiorna(satellite);
 
 		redirectAttrs.addFlashAttribute("successMessage", "Operazione eseguita correttamente");
 		return "redirect:/satellite";
 	}
-	
+
 	@PostMapping("/launch")
 	public String launchSatellite(@RequestParam Long idSatellite, RedirectAttributes redirectAttrs) {
 
@@ -122,7 +180,7 @@ public class SatelliteController {
 		redirectAttrs.addFlashAttribute("successMessage", "Operazione eseguita correttamente");
 		return "redirect:/satellite";
 	}
-	
+
 	@PostMapping("/return")
 	public String returnSatellite(@RequestParam Long idSatellite, RedirectAttributes redirectAttrs) {
 
@@ -134,7 +192,5 @@ public class SatelliteController {
 		redirectAttrs.addFlashAttribute("successMessage", "Operazione eseguita correttamente");
 		return "redirect:/satellite";
 	}
-	
-	
 
 }

@@ -96,6 +96,19 @@
 	                            	<form:errors  path="dataRientro" cssClass="error_field" />
 								</div>
 								
+								<div class="col-md-3">
+									<label for="stato" class="form-label">Stato</label>
+								    <spring:bind path="stato">
+									    <select class="form-select ${status.error ? 'is-invalid' : ''}" id="stato" name="stato" required>
+									    	<option value="" selected> - Selezionare - </option>
+									    	<option value="IN_MOVIMENTO" ${insert_satellite_attr.stato == 'IN_MOVIMENTO'?'selected':''}>IN MOVIMENTO</option>
+									      	<option value="FISSO" ${insert_satellite_attr.stato == 'FISSO'?'selected':''}>FISSO</option>
+									      	<option value="DISATTIVATO" ${insert_satellite_attr.stato == 'DISATTIVATO'?'selected':''}>DISATTIVATO</option>
+								    	</select>
+								    </spring:bind>
+								    <form:errors  path="stato" cssClass="error_field" />
+								</div>
+								
 							<div class="col-12">
 								<button type="submit" name="submit" value="submit" id="submit" class="btn btn-primary">Conferma</button>
 							</div>
