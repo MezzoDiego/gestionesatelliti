@@ -111,7 +111,7 @@ public class SatelliteController {
 		Satellite satelliteReloaded = satelliteService.caricaSingoloElemento(idSatellite);
 
 		if (satelliteReloaded.getStato() == StatoSatellite.FISSO
-				&& satelliteReloaded.getStato() == StatoSatellite.IN_MOVIMENTO) {
+				|| satelliteReloaded.getStato() == StatoSatellite.IN_MOVIMENTO) {
 			redirectAttrs.addFlashAttribute("errorMessage", "Impossibile eliminare satellite.");
 			return "redirect:/satellite";
 		}
