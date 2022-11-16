@@ -23,4 +23,6 @@ public interface SatelliteService {
 	public List<Satellite> cercaTuttiByStatoLikeAndDataRientroIsNull();
 	
 	public List<Satellite> cercaTuttiByStatoLikeAndDataRientroIsNullAndDataLancioBeforeThan();
+	
+	public List<Satellite> cercaTuttibyStatoNotLikeAndDataRientroIsNullOrAfterToday();
 }

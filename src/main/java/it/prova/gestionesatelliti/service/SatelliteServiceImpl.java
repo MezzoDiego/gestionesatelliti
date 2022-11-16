@@ -89,15 +89,23 @@ public class SatelliteServiceImpl implements SatelliteService{
 	}
 
 	@Override
+	@Transactional(readOnly = true)
 	public List<Satellite> cercaTuttiByStatoLikeAndDataRientroIsNull() {
 		return satelliteRepository.findAllByStatoLikeAndDataRientroIsNull(StatoSatellite.DISATTIVATO);
 	}
 
 	@Override
+	@Transactional(readOnly = true)
 	public List<Satellite> cercaTuttiByStatoLikeAndDataRientroIsNullAndDataLancioBeforeThan() {
 		Date dataConfronto = new Date();
 		dataConfronto.setYear(dataConfronto.getYear()-10);
 		return satelliteRepository.findAllByDataLancioBeforeAndStatoLike(dataConfronto, StatoSatellite.FISSO);
+	}
+
+	@Override
+	@Transactional(readOnly = true)
+	public List<Satellite> cercaTuttibyStatoNotLikeAndDataRientroIsNullOrAfterToday() {
+		return satelliteRepository.findAllByDataRientroIsNullOrDataRientroAfterAndStatoNotLike(new Date(), StatoSatellite.DISATTIVATO);
 	}
 
 	

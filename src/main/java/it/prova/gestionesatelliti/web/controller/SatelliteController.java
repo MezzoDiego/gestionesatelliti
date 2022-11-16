@@ -31,11 +31,12 @@ public class SatelliteController {
 	private SatelliteService satelliteService;
 
 	@GetMapping
-	public ModelAndView listAll() {
+	public ModelAndView listAll(Model model) {
 		ModelAndView mv = new ModelAndView();
 		List<Satellite> results = satelliteService.listAllElements();
 		mv.addObject("satellite_list_attribute", results);
 		mv.setViewName("satellite/list");
+		model.addAttribute("dateOfToday", new Date());
 		return mv;
 	}
 
@@ -165,13 +166,14 @@ public class SatelliteController {
 	}
 
 	@PostMapping("/launch")
-	public String launchSatellite(@RequestParam Long idSatellite, RedirectAttributes redirectAttrs) {
+	public String launchSatellite(@RequestParam Long idSatellite, RedirectAttributes redirectAttrs ,Model model) {
 
 		Satellite satelliteToBeUpdated = satelliteService.caricaSingoloElemento(idSatellite);
 		satelliteToBeUpdated.setDataLancio(new Date());
 		satelliteToBeUpdated.setStato(StatoSatellite.IN_MOVIMENTO);
 		satelliteService.aggiorna(satelliteToBeUpdated);
 
+		model.addAttribute("dateOfToday", new Date());
 		redirectAttrs.addFlashAttribute("successMessage", "Operazione eseguita correttamente");
 		return "redirect:/satellite";
 	}
@@ -217,6 +219,17 @@ public class SatelliteController {
 		List<Satellite> results = satelliteService.cercaTuttiByStatoLikeAndDataRientroIsNullAndDataLancioBeforeThan();
 		mv.addObject("satellite_list_attribute", results);
 		mv.setViewName("satellite/list");
+		return mv;
+	}
+	
+	@GetMapping("/returnAnyone")
+	public ModelAndView returnAnySatellite() {
+		ModelAndView mv = new ModelAndView();
+		List<Satellite> results = satelliteService.cercaTuttibyStatoNotLikeAndDataRientroIsNullOrAfterToday();
+		List<Satellite> listAll = satelliteService.listAllElements();
+		mv.addObject("satellite_confirmReturnAny_attribute", results);
+		mv.addObject("satellite_listAll_attribute", listAll);
+		mv.setViewName("satellite/confirmReturnAny");
 		return mv;
 	}
 
