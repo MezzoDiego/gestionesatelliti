@@ -2,6 +2,7 @@ package it.prova.gestionesatelliti.web.controller;
 
 import java.util.Date;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import javax.validation.Valid;
 
@@ -96,6 +97,7 @@ public class SatelliteController {
 	@PostMapping("/list")
 	public String listByExample(Satellite example, ModelMap model) {
 		List<Satellite> results = satelliteService.findByExample(example);
+		model.addAttribute("dateOfToday", new Date());
 		model.addAttribute("satellite_list_attribute", results);
 		return "satellite/list";
 	}
@@ -231,6 +233,22 @@ public class SatelliteController {
 		mv.addObject("satellite_listAll_attribute", listAll);
 		mv.setViewName("satellite/confirmReturnAny");
 		return mv;
+	}
+	
+	@PostMapping("/saveReturnAny")
+	public String saveReturnAnySatellite(RedirectAttributes redirectAttrs) {
+		ModelAndView mv = new ModelAndView();
+		List<Satellite> results = satelliteService.cercaTuttibyStatoNotLikeAndDataRientroIsNullOrAfterToday();
+		
+		for(Satellite item : results) {
+			item.setDataRientro(new Date());
+			item.setStato(StatoSatellite.DISATTIVATO);
+			satelliteService.aggiorna(item);
+		}
+		
+		redirectAttrs.addFlashAttribute("successMessage", "Operazione effettuata correttamente.");
+		
+		return "redirect:/home";
 	}
 
 }

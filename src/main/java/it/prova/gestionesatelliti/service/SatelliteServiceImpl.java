@@ -105,7 +105,7 @@ public class SatelliteServiceImpl implements SatelliteService{
 	@Override
 	@Transactional(readOnly = true)
 	public List<Satellite> cercaTuttibyStatoNotLikeAndDataRientroIsNullOrAfterToday() {
-		return satelliteRepository.findAllByDataRientroIsNullOrDataRientroAfterAndStatoNotLike(new Date(), StatoSatellite.DISATTIVATO);
+		return satelliteRepository.findAllByRientroNullOppureAfterTodayEStatoDisattivato();
 	}
 
 	
