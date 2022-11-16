@@ -108,17 +108,13 @@ public class SatelliteController {
 
 		Satellite satelliteReloaded = satelliteService.caricaSingoloElemento(idSatellite);
 
-		if(satelliteReloaded.getDataLancio() != null && satelliteReloaded.getDataRientro() != null && satelliteReloaded.getStato() != null) {
 		
-		if (satelliteReloaded.getDataLancio().after(new Date())) {
-			satelliteService.rimuovi(idSatellite);
-		} else if(satelliteReloaded.getDataRientro().before(new Date()) && satelliteReloaded.getStato() == StatoSatellite.DISATTIVATO) {
-			satelliteService.rimuovi(idSatellite);
-		}else{
-			redirectAttrs.addFlashAttribute("errorMessage", "Impossibile eliminare satellite: e'gia partito.");
-			return "redirect:/satellite";
-		}
-		}
+		if (satelliteReloaded.getStato() == StatoSatellite.FISSO && satelliteReloaded.getStato() == StatoSatellite.IN_MOVIMENTO) {
+			redirectAttrs.addFlashAttribute("errorMessage", "Impossibile eliminare satellite.");
+			return "redirect:/satellite";		
+			}
+			
+		
 		satelliteService.rimuovi(idSatellite);
 		
 
@@ -138,6 +134,8 @@ public class SatelliteController {
 
 		if (result.hasErrors())
 			return "satellite/update";
+		
+		if(satellite.getDataLancio() != null && satellite.getDataRientro() != null) {
 		
 		if (satellite.getDataLancio().after(satellite.getDataRientro())) {
 			result.rejectValue("dataRientro", "status.error",
@@ -161,6 +159,7 @@ public class SatelliteController {
 			result.rejectValue("dataRientro", "status.error",
 					"La data di lancio deve essere valorizzata se lo e' la data di rientro.");
 			return "satellite/update";
+		}
 		}
 			
 
@@ -186,6 +185,10 @@ public class SatelliteController {
 	public String returnSatellite(@RequestParam Long idSatellite, RedirectAttributes redirectAttrs) {
 
 		Satellite satelliteToBeUpdated = satelliteService.caricaSingoloElemento(idSatellite);
+		if(satelliteToBeUpdated.getDataLancio() != null && satelliteToBeUpdated.getDataLancio().after(new Date())) {
+			redirectAttrs.addFlashAttribute("errorMessage", " Impossibile far rientrare. la data di lancio e' successiva a quella odierna.");
+			return "redirect:/satellite";
+		}
 		satelliteToBeUpdated.setDataRientro(new Date());
 		satelliteToBeUpdated.setStato(StatoSatellite.DISATTIVATO);
 		satelliteService.aggiorna(satelliteToBeUpdated);
