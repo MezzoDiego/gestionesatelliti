@@ -52,26 +52,28 @@ public class SatelliteController {
 		if (result.hasErrors())
 			return "satellite/insert";
 
-		if(satellite.getDataLancio() != null && satellite.getDataRientro() != null) {
+
+			if (satellite.getDataLancio()!= null && satellite.getDataLancio().after(new Date()) && satellite.getStato() != null) {
+				result.rejectValue("stato", "Satellite.stato.mustBeNullIfDataLancioGreaterThanToday");
+				return "satellite/insert";
+			}
+
+			if (satellite.getDataLancio()!= null && satellite.getDataRientro()!= null && satellite.getDataLancio().after(satellite.getDataRientro())) {
+				result.rejectValue("dataRientro", "Satellite.dataRientro.mustNotBeBeforeDataLancio");
+				return "satellite/insert";
+			}
+
+			if (satellite.getDataLancio()!= null && satellite.getDataLancio().before(new Date()) && satellite.getStato() == null) {
+				result.rejectValue("stato", "Satellite.stato.mustNotBeNull");
+				return "satellite/insert";
+			}
+
+			if ((satellite.getDataRientro()!= null && satellite.getStato() == StatoSatellite.IN_MOVIMENTO || satellite.getStato() == StatoSatellite.FISSO)
+					&& satellite.getDataRientro().before(new Date())) {
+				result.rejectValue("stato", "Satellite.stato.ifDataRientroBeforeNowStatoMustBeDisattivato");
+				return "satellite/insert";
+			}
 		
-		if (satellite.getDataLancio().after(satellite.getDataRientro())) {
-			result.rejectValue("dataRientro", "status.error",
-					"La data di rientro non puo' essere inferiore a quella di lancio!!!");
-			return "satellite/insert";
-		}
-
-		if (satellite.getDataLancio().before(new Date()) && satellite.getStato() == null) {
-			result.rejectValue("stato", "status.error", "Selezionare uno stato");
-			return "satellite/insert";
-		}
-
-		if ((satellite.getStato() == StatoSatellite.IN_MOVIMENTO || satellite.getStato() == StatoSatellite.FISSO)
-				&& satellite.getDataRientro().before(new Date())) {
-			result.rejectValue("dataRientro", "status.error",
-					"Se la data di rientro e'precedente a quella odierna , lo stato deve essere disattivato.");
-			return "satellite/insert";
-		}
-		}
 
 		satelliteService.inserisciNuovo(satellite);
 
@@ -108,15 +110,13 @@ public class SatelliteController {
 
 		Satellite satelliteReloaded = satelliteService.caricaSingoloElemento(idSatellite);
 
-		
-		if (satelliteReloaded.getStato() == StatoSatellite.FISSO && satelliteReloaded.getStato() == StatoSatellite.IN_MOVIMENTO) {
+		if (satelliteReloaded.getStato() == StatoSatellite.FISSO
+				&& satelliteReloaded.getStato() == StatoSatellite.IN_MOVIMENTO) {
 			redirectAttrs.addFlashAttribute("errorMessage", "Impossibile eliminare satellite.");
-			return "redirect:/satellite";		
-			}
-			
-		
+			return "redirect:/satellite";
+		}
+
 		satelliteService.rimuovi(idSatellite);
-		
 
 		redirectAttrs.addFlashAttribute("successMessage", "Operazione eseguita correttamente");
 		return "redirect:/satellite";
@@ -134,34 +134,29 @@ public class SatelliteController {
 
 		if (result.hasErrors())
 			return "satellite/update";
+
+
+			if (satellite.getDataLancio()!= null && satellite.getDataRientro()!= null && satellite.getDataLancio().after(satellite.getDataRientro())) {
+				result.rejectValue("dataRientro", "Satellite.dataRientro.mustNotBeBeforeDataLancio");
+				return "satellite/update";
+			}
+
+			if (satellite.getDataLancio()!= null && satellite.getDataRientro()!= null && satellite.getDataLancio().before(new Date()) && satellite.getDataRientro().before(new Date())
+					&& satellite.getStato() != StatoSatellite.DISATTIVATO) {
+				result.rejectValue("stato", "Satellite.stato.ifSatelliteAtterratoItMustBeDisattivato");
+				return "satellite/update";
+			}
+
+			if (satellite.getDataRientro()!= null && satellite.getStato() == StatoSatellite.DISATTIVATO && satellite.getDataRientro() == null) {
+				result.rejectValue("dataRientro", "Satellite.dataRientro.ifStatoDisattivatoDataRientoMustBeNotNull");
+				return "satellite/update";
+			}
+
+			if (satellite.getDataLancio()!= null && satellite.getDataRientro()!= null && satellite.getDataLancio() == null && satellite.getDataRientro() != null) {
+				result.rejectValue("dataRientro", "Satellite.dataRientro.dataLancioMustNotBeNullIfDataRientroIsNull");
+				return "satellite/update";
+			}
 		
-		if(satellite.getDataLancio() != null && satellite.getDataRientro() != null) {
-		
-		if (satellite.getDataLancio().after(satellite.getDataRientro())) {
-			result.rejectValue("dataRientro", "status.error",
-					"La data di rientro non puo' essere inferiore a quella di lancio!!!");
-			return "satellite/update";
-		}
-		
-		if(satellite.getDataLancio().before(new Date()) && satellite.getDataRientro().before(new Date()) && satellite.getStato() != StatoSatellite.DISATTIVATO) {
-			result.rejectValue("stato", "status.error",
-					"Se il satellite e' atterrato, e' necessario disattivarlo.");
-			return "satellite/update";
-		}
-		
-		if(satellite.getStato() == StatoSatellite.DISATTIVATO && satellite.getDataRientro() == null) {
-			result.rejectValue("dataRientro", "status.error",
-					"Se lo stato e' disattivato, la data di rientro deve necessariamente essere valorizzata.");
-			return "satellite/update";
-		}
-		
-		if(satellite.getDataLancio() == null && satellite.getDataRientro() != null) {
-			result.rejectValue("dataRientro", "status.error",
-					"La data di lancio deve essere valorizzata se lo e' la data di rientro.");
-			return "satellite/update";
-		}
-		}
-			
 
 		satelliteService.aggiorna(satellite);
 
@@ -185,8 +180,9 @@ public class SatelliteController {
 	public String returnSatellite(@RequestParam Long idSatellite, RedirectAttributes redirectAttrs) {
 
 		Satellite satelliteToBeUpdated = satelliteService.caricaSingoloElemento(idSatellite);
-		if(satelliteToBeUpdated.getDataLancio() != null && satelliteToBeUpdated.getDataLancio().after(new Date())) {
-			redirectAttrs.addFlashAttribute("errorMessage", " Impossibile far rientrare. la data di lancio e' successiva a quella odierna.");
+		if (satelliteToBeUpdated.getDataLancio() != null && satelliteToBeUpdated.getDataLancio().after(new Date())) {
+			redirectAttrs.addFlashAttribute("errorMessage",
+					" Impossibile far rientrare. la data di lancio e' successiva a quella odierna.");
 			return "redirect:/satellite";
 		}
 		satelliteToBeUpdated.setDataRientro(new Date());
@@ -196,7 +192,7 @@ public class SatelliteController {
 		redirectAttrs.addFlashAttribute("successMessage", "Operazione eseguita correttamente");
 		return "redirect:/satellite";
 	}
-	
+
 	@GetMapping("/cercaSatellitiDaDueAnniInOrbitaNonDisattivati")
 	public ModelAndView launchedByMoreThanTwoYears() {
 		ModelAndView mv = new ModelAndView();
@@ -205,7 +201,7 @@ public class SatelliteController {
 		mv.setViewName("satellite/list");
 		return mv;
 	}
-	
+
 	@GetMapping("/cercaSatellitiDisattivatiMaNonRientrati")
 	public ModelAndView launchedAndNeverComeBack() {
 		ModelAndView mv = new ModelAndView();
@@ -214,7 +210,7 @@ public class SatelliteController {
 		mv.setViewName("satellite/list");
 		return mv;
 	}
-	
+
 	@GetMapping("/cercaSatellitiInOrbitaDaDieciAnniMaFissi")
 	public ModelAndView launchedTenYearsAgoAndFissi() {
 		ModelAndView mv = new ModelAndView();
