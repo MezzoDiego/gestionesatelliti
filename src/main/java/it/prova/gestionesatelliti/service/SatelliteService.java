@@ -1,5 +1,6 @@
 package it.prova.gestionesatelliti.service;
 
+import java.util.Date;
 import java.util.List;
 
 import it.prova.gestionesatelliti.model.Satellite;
@@ -16,4 +17,8 @@ public interface SatelliteService {
 	public void rimuovi(Long idSatellite);
 	
 	public List<Satellite> findByExample(Satellite example);
+	
+	public List<Satellite> cercaTuttiLanciatiDaPiuDiDueAnniENonDisattivati();
+	
+	public List<Satellite> cercaTuttiByStatoLikeAndDataRientroIsNull();
 }

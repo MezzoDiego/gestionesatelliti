@@ -87,9 +87,31 @@
 			        <div class="feature-icon bg-primary bg-gradient">
 			          <svg class="bi" width="1em" height="1em"><use xlink:href="#toggles2"/></svg>
 			        </div>
-			        <h2>Altra Funzione</h2>
-			        <p>Paragraph of text beneath the heading to explain the heading. We'll add onto it with another sentence and probably just keep going until we run out of words.</p>
-			        <a href="#" class="icon-link">
+			        <h2>Ricerca specifica 1</h2>
+			        <p>Ricerca satelliti da due anni in orbita e non disattivati.</p>
+			        <a href="satellite/cercaSatellitiDaDueAnniInOrbitaNonDisattivati" class="icon-link">
+			          Vai alla funzionalità
+			          <svg class="bi" width="1em" height="1em"><use xlink:href="#chevron-right"/></svg>
+			        </a>
+			      </div>
+			      <div class="feature col">
+			        <div class="feature-icon bg-primary bg-gradient">
+			          <svg class="bi" width="1em" height="1em"><use xlink:href="#toggles2"/></svg>
+			        </div>
+			        <h2>Ricerca specifica 2</h2>
+			        <p>Ricerca satelliti disattivati ma non rientrati.</p>
+			        <a href="satellite/cercaSatellitiDisattivatiMaNonRientrati" class="icon-link">
+			          Vai alla funzionalità
+			          <svg class="bi" width="1em" height="1em"><use xlink:href="#chevron-right"/></svg>
+			        </a>
+			      </div>
+			      <div class="feature col">
+			        <div class="feature-icon bg-primary bg-gradient">
+			          <svg class="bi" width="1em" height="1em"><use xlink:href="#toggles2"/></svg>
+			        </div>
+			        <h2>Ricerca specifica 3</h2>
+			        <p>Ricerca satelliti da dieci anni in orbita ma fissi</p>
+			        <a href="satellite/cercaSatellitiInOrbitaDaDieciAnniMaFissi" class="icon-link">
 			          Vai alla funzionalità
 			          <svg class="bi" width="1em" height="1em"><use xlink:href="#chevron-right"/></svg>
 			        </a>

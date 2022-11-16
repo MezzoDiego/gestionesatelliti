@@ -52,11 +52,7 @@ public class SatelliteController {
 		if (result.hasErrors())
 			return "satellite/insert";
 
-		if(satellite.getDataLancio() != null && satellite.getDataRientro() == null) {
-			result.rejectValue("dataRientro", "status.error",
-					"Inserire anche dataRientro.");
-			return "satellite/insert";
-		}
+		if(satellite.getDataLancio() != null && satellite.getDataRientro() != null) {
 		
 		if (satellite.getDataLancio().after(satellite.getDataRientro())) {
 			result.rejectValue("dataRientro", "status.error",
@@ -74,6 +70,7 @@ public class SatelliteController {
 			result.rejectValue("dataRientro", "status.error",
 					"Se la data di rientro e'precedente a quella odierna , lo stato deve essere disattivato.");
 			return "satellite/insert";
+		}
 		}
 
 		satelliteService.inserisciNuovo(satellite);
@@ -111,6 +108,8 @@ public class SatelliteController {
 
 		Satellite satelliteReloaded = satelliteService.caricaSingoloElemento(idSatellite);
 
+		if(satelliteReloaded.getDataLancio() != null && satelliteReloaded.getDataRientro() != null && satelliteReloaded.getStato() != null) {
+		
 		if (satelliteReloaded.getDataLancio().after(new Date())) {
 			satelliteService.rimuovi(idSatellite);
 		} else if(satelliteReloaded.getDataRientro().before(new Date()) && satelliteReloaded.getStato() == StatoSatellite.DISATTIVATO) {
@@ -119,7 +118,9 @@ public class SatelliteController {
 			redirectAttrs.addFlashAttribute("errorMessage", "Impossibile eliminare satellite: e'gia partito.");
 			return "redirect:/satellite";
 		}
-
+		}
+		satelliteService.rimuovi(idSatellite);
+		
 
 		redirectAttrs.addFlashAttribute("successMessage", "Operazione eseguita correttamente");
 		return "redirect:/satellite";
@@ -191,6 +192,24 @@ public class SatelliteController {
 
 		redirectAttrs.addFlashAttribute("successMessage", "Operazione eseguita correttamente");
 		return "redirect:/satellite";
+	}
+	
+	@GetMapping("/cercaSatellitiDaDueAnniInOrbitaNonDisattivati")
+	public ModelAndView launchedByMoreThanTwoYears() {
+		ModelAndView mv = new ModelAndView();
+		List<Satellite> results = satelliteService.cercaTuttiLanciatiDaPiuDiDueAnniENonDisattivati();
+		mv.addObject("satellite_list_attribute", results);
+		mv.setViewName("satellite/list");
+		return mv;
+	}
+	
+	@GetMapping("/cercaSatellitiDisattivatiMaNonRientrati")
+	public ModelAndView launchedAndNeverComeBack() {
+		ModelAndView mv = new ModelAndView();
+		List<Satellite> results = satelliteService.cercaTuttiByStatoLikeAndDataRientroIsNull();
+		mv.addObject("satellite_list_attribute", results);
+		mv.setViewName("satellite/list");
+		return mv;
 	}
 
 }
