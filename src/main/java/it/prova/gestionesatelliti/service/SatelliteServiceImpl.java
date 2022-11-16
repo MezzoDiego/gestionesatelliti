@@ -93,6 +93,13 @@ public class SatelliteServiceImpl implements SatelliteService{
 		return satelliteRepository.findAllByStatoLikeAndDataRientroIsNull(StatoSatellite.DISATTIVATO);
 	}
 
+	@Override
+	public List<Satellite> cercaTuttiByStatoLikeAndDataRientroIsNullAndDataLancioBeforeThan() {
+		Date dataConfronto = new Date();
+		dataConfronto.setYear(dataConfronto.getYear()-10);
+		return satelliteRepository.findAllByDataLancioBeforeAndStatoLike(dataConfronto, StatoSatellite.FISSO);
+	}
+
 	
 
 }

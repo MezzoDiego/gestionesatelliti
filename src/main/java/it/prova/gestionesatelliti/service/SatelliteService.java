@@ -21,4 +21,6 @@ public interface SatelliteService {
 	public List<Satellite> cercaTuttiLanciatiDaPiuDiDueAnniENonDisattivati();
 	
 	public List<Satellite> cercaTuttiByStatoLikeAndDataRientroIsNull();
+	
+	public List<Satellite> cercaTuttiByStatoLikeAndDataRientroIsNullAndDataLancioBeforeThan();
 }

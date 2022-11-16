@@ -214,5 +214,14 @@ public class SatelliteController {
 		mv.setViewName("satellite/list");
 		return mv;
 	}
+	
+	@GetMapping("/cercaSatellitiInOrbitaDaDieciAnniMaFissi")
+	public ModelAndView launchedTenYearsAgoAndFissi() {
+		ModelAndView mv = new ModelAndView();
+		List<Satellite> results = satelliteService.cercaTuttiByStatoLikeAndDataRientroIsNullAndDataLancioBeforeThan();
+		mv.addObject("satellite_list_attribute", results);
+		mv.setViewName("satellite/list");
+		return mv;
+	}
 
 }
